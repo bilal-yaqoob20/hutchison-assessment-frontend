@@ -24,14 +24,14 @@ const DogList: React.FC = () => {
   };
 
   return (
-    <div className="xl:px-80 lg:px-50 py-5">
+    <>
       {isCreateDialogOpen && (
         <CreateDialog
           isOpen={isCreateDialogOpen}
           setIsOpen={setCreateDialogOpen}
         />
       )}
-      <div className="sticky top-0 z-10 bg-white py-5 border-b">
+      <div className="sticky top-0 z-10 bg-white p-5 shadow-md">
         <div className="flex items-center justify-between">
           <div className="text-5xl font-bold">Dogs Breed List</div>
           <div className="flex items-center gap-3">
@@ -45,7 +45,7 @@ const DogList: React.FC = () => {
           </div>
         </div>
       </div>
-      <>
+      <div className="xl:px-80 lg:px-50 py-5">
         {isLoading ? (
           [1, 2, 3, 4].map((_, index) => <Loader key={index} />)
         ) : isError ? (
@@ -66,8 +66,8 @@ const DogList: React.FC = () => {
             ))}
           </InfiniteScroll>
         )}
-      </>
-    </div>
+      </div>
+    </>
   );
 };
 
