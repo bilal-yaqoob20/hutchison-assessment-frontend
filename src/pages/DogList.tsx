@@ -7,8 +7,10 @@ import CreateDialog from "../components/CreateRecordDialog";
 import Loader from "../components/Loader";
 import { useDogs } from "../hooks/useDogs";
 import type { IDog } from "../interface";
+import { useNavigate } from "react-router-dom";
 
 const DogList: React.FC = () => {
+  const navigate = useNavigate();
   const [isCreateDialogOpen, setCreateDialogOpen] = useState<boolean>(false);
 
   const { data, fetchNextPage, hasNextPage, isLoading, isError, error } =
@@ -16,22 +18,32 @@ const DogList: React.FC = () => {
 
   const dogs = (data?.pages.flat() ?? []) as IDog[];
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/auth", { replace: true });
+  };
+
   return (
-    <div className="px-90 py-5">
+    <div className="xl:px-80 lg:px-50 py-5">
       {isCreateDialogOpen && (
         <CreateDialog
           isOpen={isCreateDialogOpen}
           setIsOpen={setCreateDialogOpen}
         />
       )}
-      <div className="flex items-center justify-between mb-6">
-        <div className="text-5xl font-bold">Dogs Breed List</div>
-        <Button
-          label="Add Breed"
-          onClick={() => setCreateDialogOpen(true)}
-          icon={Plus}
-          variant="primary"
-        />
+      <div className="sticky top-0 z-10 bg-white py-5 border-b">
+        <div className="flex items-center justify-between">
+          <div className="text-5xl font-bold">Dogs Breed List</div>
+          <div className="flex items-center gap-3">
+            <Button
+              label="Add Breed"
+              onClick={() => setCreateDialogOpen(true)}
+              icon={Plus}
+              variant="primary"
+            />
+            <Button label="Logout" onClick={handleLogout} />
+          </div>
+        </div>
       </div>
       <>
         {isLoading ? (
