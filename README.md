@@ -30,7 +30,7 @@ Backend API: [https://hutchison-assessment-backend.onrender.com](https://hutchis
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/yourusername/dog-breed-frontend.git
+git clone https://github.com/bilal-yaqoob20/hutchison-assessment-frontend.git
 ```
 ### 2. Install dependencies
 ```bash
