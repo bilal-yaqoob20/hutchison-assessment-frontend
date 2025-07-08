@@ -35,11 +35,7 @@ const DogList: React.FC = () => {
       </div>
       <>
         {isLoading ? (
-          <div className="space-y-5">
-            {[1, 2, 3, 4].map((_, index) => (
-              <Loader key={index} />
-            ))}
-          </div>
+          [1, 2, 3, 4].map((_, index) => <Loader key={index} />)
         ) : isError ? (
           <div className="text-red-500 font-semibold">
             Failed to load dogs: {(error as Error).message}
