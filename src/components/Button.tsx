@@ -24,7 +24,7 @@ const Button: React.FC<ButtonProps> = ({
   type = "button",
 }) => {
   const baseStyles =
-    "flex items-center gap-1 font-medium px-4 py-2 rounded-lg transition cursor-pointer";
+    "flex items-center gap-1 font-medium px-4 py-2 rounded-lg transition cursor-pointer whitespace-nowrap";
 
   const variantStyles = {
     primary: "bg-blue-500 hover:bg-blue-600 text-white",

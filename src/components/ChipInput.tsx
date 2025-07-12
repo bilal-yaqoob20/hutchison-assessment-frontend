@@ -34,9 +34,12 @@ const ChipInput: React.FC<ChipInputProps> = ({
   return (
     <div className="flex flex-col space-y-1">
       <label className="text-sm font-medium text-gray-700">{label}</label>
-      {chips.map((chip, index) => (
-        <div key={index} className="flex items-center gap-1">
-          <div className="flex items-center gap-1 p-2 bg-blue-500 text-white rounded-2xl">
+      <div className="flex flex-wrap items-center gap-2 px-3 py-2 border rounded-md border-gray-300 focus-within:ring-2 focus-within:ring-blue-400">
+        {chips.map((chip, index) => (
+          <div
+            key={index}
+            className="flex items-center gap-1 px-2 py-1 bg-blue-500 text-white rounded-full text-sm"
+          >
             <CircleX
               onClick={() => handleRemoveChip(chip)}
               size={16}
@@ -44,16 +47,16 @@ const ChipInput: React.FC<ChipInputProps> = ({
             />
             <p className="text-sm">{chip}</p>
           </div>
-        </div>
-      ))}
-      <input
-        type="text"
-        value={inputValue}
-        onChange={handleInputChange}
-        onKeyDown={handleInputKeyDown}
-        className="px-4 py-2 rounded-md border text-sm focus:outline-none focus:ring-2 border-gray-300 focus:ring-blue-400"
-        placeholder={placeholder}
-      />
+        ))}
+        <input
+          type="text"
+          value={inputValue}
+          onChange={handleInputChange}
+          onKeyDown={handleInputKeyDown}
+          className="flex-grow min-w-[120px] outline-none border-none text-sm bg-transparent"
+          placeholder={placeholder}
+        />
+      </div>
     </div>
   );
 };

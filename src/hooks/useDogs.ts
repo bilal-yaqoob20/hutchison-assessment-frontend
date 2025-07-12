@@ -8,15 +8,16 @@ import { toast } from "react-toastify";
 import type { IDog } from "../interface";
 
 const LIMIT = 10;
+const queryKey = "dogs";
 
-export const useDogs = () => {
+export const useGetDogs = (search: string) => {
   return useInfiniteQuery({
-    queryKey: ["dogs"],
+    queryKey: [queryKey, search],
     initialPageParam: 0,
-    queryFn: ({ pageParam }) => getDogs(LIMIT, pageParam),
+    queryFn: ({ pageParam = 0 }) => getDogs(LIMIT, pageParam, search),
     getNextPageParam: (lastPage, allPages) =>
       lastPage.length < LIMIT ? undefined : allPages.length * LIMIT,
-    staleTime: 1000 * 60,
+    retry: false,
   });
 };
 
@@ -26,29 +27,30 @@ export const useDeleteDog = () => {
   return useMutation({
     mutationFn: (id: string) => deleteDog(id),
     onMutate: async (id: string) => {
-      await queryClient.cancelQueries({ queryKey: ["dogs"] });
+      await queryClient.cancelQueries({ queryKey: [queryKey] });
 
-      const previousData = queryClient.getQueryData(["dogs"]);
+      const queries = queryClient.getQueriesData({ queryKey: [queryKey] });
 
-      queryClient.setQueryData(["dogs"], (old: any) => {
-        if (!old) return old;
-        return {
+      queries.forEach(([key, old]: any) => {
+        if (!old) return;
+        queryClient.setQueryData(key, {
           ...old,
           pages: old.pages.map((page: IDog[]) =>
             page.filter((dog) => dog.id !== id)
           ),
-        };
+        });
       });
 
-      return { previousData };
+      return { previousData: queries };
     },
     onSuccess: () => {
       toast.success("Breed deleted successfully");
     },
     onError: (error: any, _, context) => {
-      if (context?.previousData) {
-        queryClient.setQueryData(["dogs"], context.previousData);
-      }
+      context?.previousData?.forEach(([key, data]: any) => {
+        queryClient.setQueryData(key, data);
+      });
+
       const message =
         error?.response?.data?.error ||
         "Something went wrong. Please try again.";
@@ -62,36 +64,52 @@ export const useCreateDog = () => {
   return useMutation({
     mutationFn: (dog: IDog) => createDog(dog),
     onMutate: async (newDog: IDog) => {
-      await queryClient.cancelQueries({ queryKey: ["dogs"] });
-      const previousData = queryClient.getQueryData(["dogs"]);
-
-      queryClient.setQueryData(["dogs"], (old: any) => {
-        if (!old) return old;
-
-        const newFirstPage = [newDog, ...old.pages[0]];
-        const newPages = [newFirstPage, ...old.pages.slice(1)];
-
-        return { ...old, pages: newPages };
+      await queryClient.cancelQueries({ queryKey: [queryKey] });
+      const queries = queryClient.getQueriesData<IDog[]>({
+        queryKey: [queryKey],
       });
 
-      return { previousData };
+      queries.forEach(([queryKey, oldData]: any) => {
+        if (!oldData) return;
+
+        const newFirstPage = [newDog, ...oldData.pages[0]];
+        const newPages = [newFirstPage, ...oldData.pages.slice(1)];
+
+        queryClient.setQueryData(queryKey, {
+          ...oldData,
+          pages: newPages,
+        });
+      });
+
+      return { previousData: queries };
     },
+
     onSuccess: (newDog) => {
-      queryClient.setQueryData(["dogs"], (old: any) => {
-        if (!old) return old;
-        const updatedPages = old.pages.map((page: IDog[], index: number) =>
+      const queries = queryClient.getQueriesData<IDog[]>({
+        queryKey: [queryKey],
+      });
+      queries.forEach(([queryKey, oldData]: any) => {
+        if (!oldData) return;
+
+        const updatedPages = oldData.pages.map((page: IDog[], index: number) =>
           index === 0
             ? [newDog, ...page.filter((dog) => dog.breed !== newDog.breed)]
             : page
         );
-        return { ...old, pages: updatedPages };
+        queryClient.setQueryData(queryKey, {
+          ...oldData,
+          pages: updatedPages,
+        });
       });
+
       toast.success("Breed created successfully");
     },
+
     onError: (error: any, _, context) => {
-      if (context?.previousData) {
-        queryClient.setQueryData(["dogs"], context.previousData);
-      }
+      context?.previousData?.forEach(([queryKey, data]: any) => {
+        queryClient.setQueryData(queryKey, data);
+      });
+
       const message =
         error?.response?.data?.error ||
         "Something went wrong. Please try again.";
@@ -102,28 +120,36 @@ export const useCreateDog = () => {
 
 export const useEditDog = () => {
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: ({ id, subBreeds }: { id: string; subBreeds: string[] }) =>
       updateDog(id, subBreeds),
+
     onMutate: async ({ id, subBreeds }) => {
-      await queryClient.cancelQueries({ queryKey: ["dogs"] });
-      const previousData = queryClient.getQueryData(["dogs"]);
-      queryClient.setQueryData(["dogs"], (old: any) => {
-        if (!old) return old;
-        const updatedPages = old.pages.map((page: IDog[]) =>
-          page.map((dog) => (dog.id === id ? { ...dog, subBreeds } : dog))
-        );
-        return { ...old, pages: updatedPages };
+      await queryClient.cancelQueries({ queryKey: [queryKey] });
+
+      const queries = queryClient.getQueriesData({ queryKey: [queryKey] });
+
+      queries.forEach(([key, old]: any) => {
+        if (!old) return;
+        queryClient.setQueryData(key, {
+          ...old,
+          pages: old.pages.map((page: IDog[]) =>
+            page.map((dog) => (dog.id === id ? { ...dog, subBreeds } : dog))
+          ),
+        });
       });
-      return { previousData };
+
+      return { previousData: queries };
     },
     onSuccess: () => {
       toast.success("Breed updated successfully");
     },
     onError: (error: any, _, context) => {
-      if (context?.previousData) {
-        queryClient.setQueryData(["dogs"], context.previousData);
-      }
+      context?.previousData?.forEach(([key, data]: any) => {
+        queryClient.setQueryData(key, data);
+      });
+
       const message =
         error?.response?.data?.error ||
         "Something went wrong. Please try again.";

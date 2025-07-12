@@ -24,7 +24,7 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 || error.response?.status === 403) {
       localStorage.removeItem("token");
       window.location.href = "/auth";
     }
@@ -32,11 +32,13 @@ apiClient.interceptors.response.use(
   }
 );
 
-export const getDogs = async (limit: number, offset: number) =>
+export const getDogs = async (limit: number, offset: number, search: string) =>
   (
-    await apiClient.get("/dogs", {
-      params: { limit, offset },
-    })
+    await apiClient.get(
+      `/dogs?limit=${limit}&offset=${offset}${
+        search ? "&search=" + search : ""
+      }`
+    )
   ).data;
 
 export const createDog = async (dog: IDog) =>
